@@ -16,7 +16,9 @@ services:
     restart: unless-stopped
 
   pipelines:
-    image: ghcr.io/open-webui/pipelines:main
+    build:
+      context: .
+      dockerfile: Dockerfile.pipelines
     container_name: mtbank-pipelines
     ports:
       - "9099:9099"
@@ -24,6 +26,35 @@ services:
       - .:/app/pipelines
     env_file:
       - .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: mtbank-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     depends_on:
       - ollama
     restart: unless-stopped

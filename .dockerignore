@@ -1,0 +1,9 @@
+.git
+.github
+__pycache__
+*.pyc
+.pytest_cache
+.env
+test_data/*.wav
+test_data/*.mp3
+test_data/*.ogg

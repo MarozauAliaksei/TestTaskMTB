@@ -26,7 +26,10 @@ from pydantic import BaseModel
 
 from agents.llm_client import LLMClient
 from agents.orchestrator import run_analysis
-from asr.diarizer import assign_speakers, detect_speech_islands
+from asr.diarizer import (
+    assign_speakers,
+    detect_speech_islands,
+)
 from asr.transcriber import AudioConversionError, Transcriber, TranscriptionError
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -41,8 +44,7 @@ class Pipeline:
         LLM_MODEL: str = os.getenv("LLM_MODEL", "qwen2.5:3b-instruct")
         WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "small")
         WHISPER_DEVICE: str = os.getenv("WHISPER_DEVICE", "cuda")
-        WHISPER_COMPUTE_TYPE: str = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
-        LLM_API_KEY: str = os.getenv("LLM_API_KEY", "ollama")
+        WHISPER_COMPUTE_TYPE: str = os.getenv("WHISPER_COMPUTE_TYPE", "float16")
 
     def __init__(self):
         self.name = "MTBank Call Analytics"
@@ -57,11 +59,7 @@ class Pipeline:
             device=self.valves.WHISPER_DEVICE,
             compute_type=self.valves.WHISPER_COMPUTE_TYPE,
         )
-        self.llm = LLMClient(
-            base_url=self.valves.LLM_BASE_URL,
-            model=self.valves.LLM_MODEL,
-            api_key=self.valves.LLM_API_KEY,
-        )
+        self.llm = LLMClient(base_url=self.valves.LLM_BASE_URL, model=self.valves.LLM_MODEL)
 
     async def on_shutdown(self):
         logger.info(json.dumps({"event": "pipeline_shutdown", "name": self.name}))
@@ -131,8 +129,10 @@ class Pipeline:
         try:
             local_path = self._download_audio(audio_url)
             raw_segments = self.transcriber.transcribe(local_path)
-            islands = detect_speech_islands(local_path)
-            segments = assign_speakers(raw_segments, islands)
+            segments = assign_speakers(
+    raw_segments,
+    detect_speech_islands(local_path),
+)
             if not segments:
                 return "Не удалось распознать речь в этом файле (пустой результат)."
 
