@@ -7,4 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
+# Пути к cuBLAS/cuDNN из pip-пакетов nvidia-cublas-cu12/nvidia-cudnn-cu12.
+# Прописано через ENV (не через runtime export в entrypoint.sh) специально:
+# ENV применяется ко ВСЕМ процессам в контейнере, включая `docker compose
+# exec` — в отличие от export в entrypoint.sh, который был виден только
+# основному процессу-серверу и не доходил до ручных exec-сессий.
 ENV LD_LIBRARY_PATH="/usr/local/lib/python3.11/site-packages/nvidia/cublas/lib:/usr/local/lib/python3.11/site-packages/nvidia/cudnn/lib:${LD_LIBRARY_PATH}"

@@ -1,4 +1,10 @@
+"""
+Считает WER (jiwer) для всех файлов в test_data/ против эталонных .txt.
 
+Запускать ВНУТРИ контейнера pipelines (там уже есть faster-whisper, GPU, ffmpeg):
+
+    sudo docker compose exec pipelines python3 test_data/compute_wer.py
+"""
 
 import os
 import sys
