@@ -17,3 +17,11 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 # exec` — в отличие от export в entrypoint.sh, который был виден только
 # основному процессу-серверу и не доходил до ручных exec-сессий.
 ENV LD_LIBRARY_PATH="/usr/local/lib/python3.11/site-packages/nvidia/cublas/lib:/usr/local/lib/python3.11/site-packages/nvidia/cudnn/lib:${LD_LIBRARY_PATH}"
+
+# Локально этот код "появляется" в контейнере через volume в docker-compose.yml
+# (.:/app/pipelines) — но это работает только при запуске через docker compose.
+# На Railway (и любом другом хостинге, который просто собирает Dockerfile без
+# docker-compose) том никто не подключает — без явного COPY здесь каталог
+# /app/pipelines внутри образа остаётся пустым, и pipeline.py никогда не
+# загружается (проверено на практике: /models отдавал "data": [] на Railway).
+COPY . /app/pipelines
